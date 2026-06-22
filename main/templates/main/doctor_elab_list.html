@@ -1,0 +1,66 @@
+{% extends 'main/base.html' %}
+{% block title %}Manage eLab Reports{% endblock %}
+
+{% block content %}
+<section class="container" style="max-width:900px; margin:2rem auto; font-family: Arial, sans-serif;">
+    <h2 style="margin-bottom:1rem;">Manage eLab Reports</h2>
+
+    <table style="width:100%; border-collapse: collapse; font-size:0.9rem; margin-top:1rem; border:1px solid #ccc;">
+        <thead style="background:#f5f5f5;">
+            <tr>
+                <th style="border:1px solid #ddd; padding:8px;">Patient</th>
+                <th style="border:1px solid #ddd; padding:8px;">Test Name</th>
+                <th style="border:1px solid #ddd; padding:8px;">Scheduled Date</th>
+                <th style="border:1px solid #ddd; padding:8px;">Report</th>
+                <th style="border:1px solid #ddd; padding:8px;">Status</th>
+                <th style="border:1px solid #ddd; padding:8px;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for test in elab_tests %}
+            <tr>
+                <td style="border:1px solid #ddd; padding:6px;">{{ test.user.username }}</td>
+                <td style="border:1px solid #ddd; padding:6px;">{{ test.test_name }}</td>
+                <td style="border:1px solid #ddd; padding:6px;">{{ test.preferred_date|date:"Y-m-d" }}</td>
+                <td style="border:1px solid #ddd; padding:6px;">
+                    {% if test.report_file %}
+                        <a href="{{ test.report_file.url }}" target="_blank">View</a>
+                    {% else %}
+                        Not uploaded yet
+                    {% endif %}
+                </td>
+                <td style="border:1px solid #ddd; padding:6px;">
+                    {% if not test.report_file %}
+                        Not uploaded
+                    {% elif test.report_file and not test.report_verified %}
+                        Pending Verification
+                    {% else %}
+                        Verified
+                    {% endif %}
+                </td>
+                <td style="border:1px solid #ddd; padding:6px;">
+                    {% if test.report_file and not test.report_verified %}
+                        <form method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="test_id" value="{{ test.id }}">
+                            <button type="submit" name="verify"
+                                style="padding:4px 10px; font-size:0.8rem; background:#28a745; color:#fff; border:none; border-radius:4px; cursor:pointer;">
+                                Verify
+                            </button>
+                        </form>
+                    {% elif test.report_verified %}
+                        <span style="color:green; font-size:0.85rem;">Verified</span>
+                    {% else %}
+                        <span style="color:#777; font-size:0.85rem;">No report uploaded yet</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align:center; padding:1rem; color:#777;">No tests assigned</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
